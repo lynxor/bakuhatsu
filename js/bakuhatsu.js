@@ -1,6 +1,5 @@
-var _ = require("underscore");
-
-var kill_radius = 3;
+var kill_radius = 70,
+    panic_radius = 250;
 
 function inRadius(location, center, radius){
     return radius > distance(location, center);
@@ -21,7 +20,20 @@ function calcExplosion(rabbits, bombs) {
             return !(inRadius( rabbit, bomb, kill_radius));
         });
     });
-    return rabbits.length;
+    return rabbits;
+}
+
+function calcPanic(rabbits, bomb){
+    _.map(rabbits, function(rabbit){
+        if(inRadius(rabbit, bomb, panic_radius)){
+           return rabbitPanic(rabbit, bomb);
+        }
+        return rabbit;
+    });
+}
+
+function rabbitPanic(rabbit, panicSource){
+
 }
 
 
@@ -48,16 +60,16 @@ function worldView(rabbits, size){
     return worldView;
 }
 
-//testing
-(function(){
-    console.log(worldView( randomRabbits(20, 10), 10 ));
-    console.log(randomRabbits(20, 10).length);
-
-    var rabbits = [ [1,1], [0,1], [2,1], [0,2], [0,0] , [5,5] ],
-        bombs = [ [0,0] ];
-
-    console.log( calcExplosion(rabbits, bombs) );
-
-})();
+////testing
+//(function(){
+//    console.log(worldView( randomRabbits(20, 10), 10 ) );
+//    console.log(randomRabbits(20, 10).length);
+//
+//    var rabbits = [ [1,1], [0,1], [2,1], [0,2], [0,0] , [5,5] ],
+//        bombs = [ [0,0] ];
+//
+//    console.log( calcExplosion(rabbits, bombs) );
+//
+//})();
 
 
