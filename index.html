@@ -23,12 +23,23 @@
 
         <!-- Add your site or application content here -->
         <div id='content'>
-            <div style='height: 500px;width:500px;' >
+            <div style='height: 500px;width:500px; float: left;' >
                 <canvas id="the_canvas" width="400" height="400"></canvas>
             </div>
-            <div id='controls'>
+            <div id='controls' style='float: left;'>
+
+                <label for='num_bombs' >Number of bombs</label>
+                <input id='num_bombs' type='text' value='5' > </br>
+
+                <label for='num_rabbits' >Number of rabbits</label>
+                <input id='num_rabbits' type='text' value='20' > </br>
+
+                <label for='kill_radius' >Explosion Radius</label>
+                <input id="kill_radius" type='text' value='70' > </br>
+
                 <label for='timer' >Timeout</label>
                 <input id='timer' type='text' value='1' > </br>
+
                 <button id='start_button' style='display:none;' value='Start' >Start</button>
                 <button id='reset_button'>Reset</button>
                 <span id='dashboard'></span>

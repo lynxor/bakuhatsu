@@ -8,16 +8,24 @@ $(function () {
         availableBombs = 10,
         bombs = [],
         numPanics = 20,
-        panics = [_.map(_.range(numPanics),function(){return [];})],
+        panics = [_.map(_.range(numPanics), function () {
+            return [];
+        })],
         panicInterval = 100;
 
-    function reset(){
+    function reset() {
+        numRabbits = parseInt( $("#num_rabbits").val() );
+        kill_radius = parseInt( $("#kill_radius").val() );
+        availableBombs = parseInt( $("#num_bombs").val() );
         rabbits = randomRabbits(numRabbits, dim - 20);
-        panics = [_.map(_.range(numPanics),function(){return [];})];
+        panics = [_.map(_.range(numPanics), function () {
+            return [];
+        })];
         bombs = [];
         draw();
         updateControls();
     }
+
     $("#reset_button").click(reset);
 
     function updateControls() {
@@ -57,7 +65,7 @@ $(function () {
                 if (bomb.countdown <= 0) {
                     console.log("Exploding! " + bomb.pos);
                     explode(bomb.pos);
-                    if(done()){
+                    if (done()) {
                         setTimeout(showResult, 1000);
                     }
                 } else {
@@ -67,65 +75,76 @@ $(function () {
         }
     }
 
-    function showResult(){
+    function showResult() {
         context.font = "bold 30px sans-serif";
         context.textBaseline = "top";
 
-        if(rabbits.length){
+        if (rabbits.length) {
             $("#result").html("You suck!");
             context.fillStyle = "#F00";
             context.fillText("You suck!", (dim / 2) - 30, 10);
-        } else{
+        } else {
             context.fillStyle = "#F00";
             context.fillText("Well done, all rabbits are now eradicated!!", 10, (dim / 2) - 30);
         }
     }
 
-    function done(){
-        return !_.any(bombs, function(bomb){
+    function done() {
+        return !_.any(bombs, function (bomb) {
             return bomb.countdown > 0;
-        });
+        }) && bombs.length !== 0;
     }
 
     function explode(pos) {
         rabbits = calcExplosion(rabbits, [pos]);
         drawExplosion(pos);
         setTimeout(draw, 200);
-        setTimeout(function(){panic(pos);}, 200);
+        setTimeout(function () {
+            panic(pos);
+        }, 200);
     }
 
-    function panic(pos){
-        var thisPanics = _.map(_.range(numPanics), function(){return pos});
+    function panic(pos) {
+        var thisPanics = _.map(_.range(numPanics), function () {
+            return pos
+        });
 
-        for(var i = 0; i< thisPanics.length; i++){
-          if(_.isUndefined(panics[i])){
-              panics[i] = [thisPanics[i]];
-          } else{
-              panics[i].push(thisPanics[i]);
-          }
+        for (var i = 0; i < thisPanics.length; i++) {
+            if (_.isUndefined(panics[i])) {
+                panics[i] = [thisPanics[i]];
+            } else {
+                panics[i].push(thisPanics[i]);
+            }
         }
     }
 
-    function startPanic(){
+    function startPanic() {
 
-        function doPanic(){
-            if(panics.length && !done() ){
+        function doPanic() {
+            if (panics.length && !done()) {
                 var pbombs = panics.pop();
                 rabbits = calcPanic(rabbits, pbombs, dim);
                 draw();
             }
 
-            if(!done()){
+            if (!done()) {
                 setTimeout(doPanic, panicInterval);
             }
         }
+
         doPanic();
     }
 
     $(canvas).mousemove(function (e) {
-        draw();
-        var position = $(canvas).position(), x = e.pageX-position.left, y = e.pageY - position.top;
-        showExplosionZone([x, y]);
+        if (!done()) {
+            var position = $(canvas).position(),
+                x = e.pageX - position.left,
+                y = e.pageY - position.top;
+            draw();
+            if(x > 3 && x < (dim - 3) && y  > 3 && y < (dim - 3)){     //blagh useless
+                showExplosionZone([x, y]);
+            }
+        }
     });
 
 
@@ -134,22 +153,17 @@ $(function () {
             x = e.pageX - position.left,
             y = e.pageY - position.top;
 
-        placeBomb([x, y], parseInt( $("#timer").val() ));
+        placeBomb([x, y], parseInt($("#timer").val()));
     });
 
     function showExplosionZone(pos) {
         var expzone = new Image();
         expzone.src = "img/thefadedring.png";
-
-        expzone.onload = function(){
-            context.drawImage(expzone, pos[0]-panic_radius, pos[1]-panic_radius, panic_radius*2, panic_radius*2);
-        };
+        context.drawImage(expzone, pos[0] - panic_radius, pos[1] - panic_radius, panic_radius * 2, panic_radius * 2);
 
         var darkZone = new Image();
         darkZone.src = "img/thedarkring.png";
-        darkZone.onload = function(){
-            context.drawImage(expzone, pos[0]-kill_radius, pos[1]-kill_radius, kill_radius*2, kill_radius*2);
-        };
+        context.drawImage(darkZone, pos[0] - kill_radius, pos[1] - kill_radius, kill_radius * 2, kill_radius * 2);
     }
 
     function draw() {
@@ -159,13 +173,19 @@ $(function () {
 
     function drawExplosion(pos) {
         context.fillStyle = "#F62";
-        circle(pos[0], pos[1], kill_radius);
+        fillCircle(pos[0], pos[1], kill_radius);
     }
 
-    function circle(centerX, centerY, radius) {
+    function fillCircle(centerX, centerY, radius) {
         context.beginPath();
         context.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
         context.fill();
+    }
+
+    function  strokeCircle(centerX, centerY, radius){
+        context.beginPath();
+        context.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
+        context.stroke();
     }
 
     function drawWarZone() {
@@ -193,12 +213,16 @@ $(function () {
 
         if (bomb.countdown > 0) {
             context.fillStyle = '#F00';
-            context.fillRect(x, y, 40, 20);
+            context.fillRect(x - 20, y - 10, 40, 20);
 
             context.fillStyle = "#FFF";
             context.font = "bold 12px sans-serif";
             context.textBaseline = "top";
-            context.fillText("" + bomb.countdown, x + 15, y);
+            context.fillText("" + bomb.countdown, x - 1, y - 6);
+
+            context.strokeStyle = '#D11';
+            strokeCircle(x, y, kill_radius);
+           // strokeCircle(x, y, panic_radius);
         }
     }
 
