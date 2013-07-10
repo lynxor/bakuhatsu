@@ -3,15 +3,16 @@ $(function () {
     var canvas = document.getElementById("the_canvas"),
         context = canvas.getContext("2d"),
         dim = 400,
-        numRabbits = 20,
+        numRabbits = 5,
         rabbits = randomRabbits(numRabbits, dim - 20),
-        availableBombs = 10,
+        availableBombs = 3,
         bombs = [],
         numPanics = 20,
         panics = [_.map(_.range(numPanics), function () {
             return [];
         })],
-        panicInterval = 100;
+        panicInterval = 100,
+        originalRabbits; //replays!!
 
     function reset() {
         numRabbits = parseInt( $("#num_rabbits").val() );
@@ -24,7 +25,17 @@ $(function () {
         bombs = [];
         draw();
         updateControls();
+        $("start_button").hide();
     }
+
+    $("#reset_bombs").click(function(){
+        bombs = [];
+        $("start_button").hide();
+        availableBombs = parseInt( $("#num_bombs").val() );
+        draw();
+    });
+
+
 
     $("#reset_button").click(reset);
 
@@ -45,8 +56,21 @@ $(function () {
         }
     }
 
+    $("#replay_button").click(replay);
+    function replay(){
+        rabbits = originalRabbits;
+        _.each(bombs, function(b){
+            b.countdown = b.timeout;
+        });
+        panics = [];
+        draw();
+        start();
+    }
+
     $("#start_button").click(start);
     function start() {
+        originalRabbits = rabbits;
+
         if (bombs.length === availableBombs) {
             _.each(bombs, function (bomb) {
                 countdown(bomb);
@@ -60,13 +84,14 @@ $(function () {
                     bomb.countdown = bomb.timeout;
                 }
                 bomb.countdown -= 1;
-                console.log("Time left: " + bomb.countdown);
+                //console.log("Time left: " + bomb.countdown);
                 drawBomb(bomb);
                 if (bomb.countdown <= 0) {
                     console.log("Exploding! " + bomb.pos);
                     explode(bomb.pos);
                     if (done()) {
                         setTimeout(showResult, 1000);
+                        $("#replay_button").show();
                     }
                 } else {
                     countdown(bomb);
