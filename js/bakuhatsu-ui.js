@@ -4,6 +4,9 @@ $(function () {
         context = canvas.getContext("2d"),
         dim = 400,
         numRabbits = 5,
+        grassImage, //the image
+        explosionImage, //explosion image
+        rabbitImage,
         rabbits = randomRabbits(numRabbits, dim - 20),
         availableBombs = 3,
         bombs = [],
@@ -13,6 +16,10 @@ $(function () {
         })],
         panicInterval = 100,
         originalRabbits; //replays!!
+
+        explosionImage = new Image();
+        explosionImage.src = "img/explosion.png";
+        explosionImage.onload = function(){ context.drawImage(explosionImage, 0,0);}
 
     function reset() {
         numRabbits = parseInt( $("#num_rabbits").val() );
@@ -28,7 +35,7 @@ $(function () {
         $("start_button").hide();
     }
 
-    $("#reset_bombs").click(function(){
+    $("#reset_bombs_button").click(function(){
         bombs = [];
         $("start_button").hide();
         availableBombs = parseInt( $("#num_bombs").val() );
@@ -110,7 +117,7 @@ $(function () {
             context.fillText("You suck!", (dim / 2) - 30, 10);
         } else {
             context.fillStyle = "#F00";
-            context.fillText("Well done, all rabbits are now eradicated!!", 10, (dim / 2) - 30);
+            context.fillText("Well done, eradication!!", 10, (dim / 2) - 30);
         }
     }
 
@@ -197,8 +204,10 @@ $(function () {
     }
 
     function drawExplosion(pos) {
-        context.fillStyle = "#F62";
-        fillCircle(pos[0], pos[1], kill_radius);
+//        context.fillStyle = "#F62";
+//        fillCircle(pos[0], pos[1], kill_radius);
+        var radius = kill_radius
+        context.drawImage(explosionImage, pos[0] - radius, pos[1] - radius, kill_radius * 2, kill_radius * 2);
     }
 
     function fillCircle(centerX, centerY, radius) {
@@ -214,21 +223,41 @@ $(function () {
     }
 
     function drawWarZone() {
-        context.fillStyle = "#3F3";
-        context.fillRect(0, 0, dim, dim);
+//        context.fillStyle = "#3F3";
+//        context.fillRect(0, 0, dim, dim);
+        var blockSize = 100;
+        if(_.isUndefined(grassImage)){
+            grassImage = new Image();
+            grassImage.src = "img/grass.png";
+            grassImage.onload = drawGrass;
+        }
+
+        function drawGrass(){
+            for(var i = 0; i < dim/blockSize; i++){
+                for(var j = 0; j < dim/blockSize; j++){
+                    context.drawImage(grassImage, j*blockSize, i*blockSize, blockSize, blockSize);
+                }
+            }
+        }
+        drawGrass();
         _.each(bombs, drawBomb);
     }
 
     function drawRabbits() {
-        var rabbit = new Image();
-        rabbit.src = "img/rabbited.png";
-        rabbit.onload = function () {
+        if(!rabbitImage){
+            rabbitImage = new Image();
+            rabbitImage.src = "img/rabbited.png";
+            rabbitImage.onload = onloadStuff;
+        }
+
+        function onloadStuff() {
             for (var i = 0; i < rabbits.length; i++) {
                 var r = rabbits[i];
                 //console.log("Drawing " + r);
-                context.drawImage(rabbit, r[0] - 10, r[1] - 10, 20, 20);
+                context.drawImage(rabbitImage, r[0] - 10, r[1] - 10, 20, 20);
             }
         }
+        onloadStuff();
     }
 
     function drawBomb(bomb) {
