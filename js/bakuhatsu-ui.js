@@ -122,6 +122,13 @@ $(function () {
         doPanic();
     }
 
+    $(canvas).mousemove(function (e) {
+        draw();
+        var position = $(canvas).position(), x = e.pageX-position.left, y = e.pageY - position.top;
+        showExplosionZone([x, y]);
+    });
+
+
     $(canvas).mousedown(function (e) {
         var position = $(canvas).position(),
             x = e.pageX - position.left,
@@ -129,6 +136,21 @@ $(function () {
 
         placeBomb([x, y], parseInt( $("#timer").val() ));
     });
+
+    function showExplosionZone(pos) {
+        var expzone = new Image();
+        expzone.src = "img/thefadedring.png";
+
+        expzone.onload = function(){
+            context.drawImage(expzone, pos[0]-panic_radius, pos[1]-panic_radius, panic_radius*2, panic_radius*2);
+        };
+
+        var darkZone = new Image();
+        darkZone.src = "img/thedarkring.png";
+        darkZone.onload = function(){
+            context.drawImage(expzone, pos[0]-kill_radius, pos[1]-kill_radius, kill_radius*2, kill_radius*2);
+        };
+    }
 
     function draw() {
         drawWarZone();
@@ -154,7 +176,7 @@ $(function () {
 
     function drawRabbits() {
         var rabbit = new Image();
-        rabbit.src = "img/rabbit.jpg";
+        rabbit.src = "img/rabbited.png";
         rabbit.onload = function () {
             for (var i = 0; i < rabbits.length; i++) {
                 var r = rabbits[i];
