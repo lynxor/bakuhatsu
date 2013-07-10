@@ -5,11 +5,20 @@ $(function () {
         dim = 400,
         numRabbits = 20,
         rabbits = randomRabbits(numRabbits, dim - 20),
-        availableBombs = 4,
+        availableBombs = 10,
         bombs = [],
         numPanics = 20,
         panics = [_.map(_.range(numPanics),function(){return [];})],
         panicInterval = 100;
+
+    function reset(){
+        rabbits = randomRabbits(numRabbits, dim - 20);
+        panics = [_.map(_.range(numPanics),function(){return [];})];
+        bombs = [];
+        draw();
+        updateControls();
+    }
+    $("#reset_button").click(reset);
 
     function updateControls() {
         $("#dashboard").html("Bombs left to place: " + (availableBombs - bombs.length));
@@ -46,11 +55,10 @@ $(function () {
                 console.log("Time left: " + bomb.countdown);
                 drawBomb(bomb);
                 if (bomb.countdown <= 0) {
-                    console.log("EXploding! " + bomb.pos);
+                    console.log("Exploding! " + bomb.pos);
                     explode(bomb.pos);
-
                     if(done()){
-                         showResult();
+                        setTimeout(showResult, 1000);
                     }
                 } else {
                     countdown(bomb);
@@ -60,10 +68,16 @@ $(function () {
     }
 
     function showResult(){
+        context.font = "bold 30px sans-serif";
+        context.textBaseline = "top";
+
         if(rabbits.length){
             $("#result").html("You suck!");
+            context.fillStyle = "#F00";
+            context.fillText("You suck!", (dim / 2) - 30, 10);
         } else{
-            $("#result").html("Well done, all rabbits are now eradicated!");
+            context.fillStyle = "#F00";
+            context.fillText("Well done, all rabbits are now eradicated!!", 10, (dim / 2) - 30);
         }
     }
 
@@ -90,18 +104,17 @@ $(function () {
               panics[i].push(thisPanics[i]);
           }
         }
-
-
     }
 
     function startPanic(){
 
         function doPanic(){
-            if(panics.length ){
+            if(panics.length && !done() ){
                 var pbombs = panics.pop();
                 rabbits = calcPanic(rabbits, pbombs, dim);
                 draw();
             }
+
             if(!done()){
                 setTimeout(doPanic, panicInterval);
             }
@@ -165,8 +178,8 @@ $(function () {
             context.textBaseline = "top";
             context.fillText("" + bomb.countdown, x + 15, y);
         }
-
     }
+
 
     draw();
     updateControls();
