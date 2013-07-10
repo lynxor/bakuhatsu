@@ -24,18 +24,25 @@ function calcExplosion(rabbits, bombs) {
     return rabbits;
 }
 
-function calcPanic(rabbits, bomb, dim){
+function calcPanic(rabbits, bombs, dim){
     return _.map(rabbits, function(rabbit){
-        if(inRadius(rabbit, bomb, panic_radius)){
-           return rabbitPanic(rabbit, bomb, dim);
+        var bombsInRange = _.filter(bombs, function(b){
+             return inRadius(rabbit, b, panic_radius);
+        });
+
+        if(bombsInRange.length){
+           return rabbitPanic(rabbit, bombsInRange, dim);
         }
         return rabbit;
     });
 }
 
-function rabbitPanic(rabbit, panicSource, dim){
-    var u = unitVector(panicSource, rabbit),
-        newPos = vAdd(rabbit, vMult(speed, u));
+function rabbitPanic(rabbit, panicSources, dim){
+    var u = _.map(panicSources, function(p){
+            return unitVector(p, rabbit);
+        }),
+        uAveraged = vMult(panicSources.length, vAv(u)),
+        newPos = vAdd(rabbit, vMult(speed, uAveraged));
 
     //Prevent from running out of warzone
     if( _.every(newPos, function(k){
@@ -47,12 +54,23 @@ function rabbitPanic(rabbit, panicSource, dim){
 
 }
 
+function vAv(vectors){
+    var sum = _.reduce(vectors, function(memo, vec){
+        return vAdd(memo, vec);
+    });
+    return vDiv(vectors.length, sum);
+}
+
 function vAdd(p,q){
     var i, result = [];
     for(i = 0; i < q.length; i++){
         result[i] = (q[i] + p[i]);
     }
     return result;
+}
+
+function vDiv(x, p){
+    return _.map(p, function(k){return k/x;});
 }
 
 function vMult(x, p){

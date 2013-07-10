@@ -5,11 +5,11 @@ $(function () {
         dim = 400,
         numRabbits = 20,
         rabbits = randomRabbits(numRabbits, dim - 20),
-        availableBombs = 3,
+        availableBombs = 4,
         bombs = [],
-        panics = [],
-        panicInterval = 100,
-        numPanics = 20;
+        numPanics = 20,
+        panics = [_.map(_.range(numPanics),function(){return [];})],
+        panicInterval = 100;
 
     function updateControls() {
         $("#dashboard").html("Bombs left to place: " + (availableBombs - bombs.length));
@@ -34,6 +34,7 @@ $(function () {
             _.each(bombs, function (bomb) {
                 countdown(bomb);
             });
+            startPanic();
         }
 
         function countdown(bomb) {
@@ -80,13 +81,28 @@ $(function () {
     }
 
     function panic(pos){
-        panics = _.map(_.range(numPanics), function(){return pos});
+        var thisPanics = _.map(_.range(numPanics), function(){return pos});
+
+        for(var i = 0; i< thisPanics.length; i++){
+          if(_.isUndefined(panics[i])){
+              panics[i] = [thisPanics[i]];
+          } else{
+              panics[i].push(thisPanics[i]);
+          }
+        }
+
+
+    }
+
+    function startPanic(){
 
         function doPanic(){
-            if(panics.length){
-                var bomb = panics.pop();
-                rabbits = calcPanic(rabbits, bomb, dim);
+            if(panics.length ){
+                var pbombs = panics.pop();
+                rabbits = calcPanic(rabbits, pbombs, dim);
                 draw();
+            }
+            if(!done()){
                 setTimeout(doPanic, panicInterval);
             }
         }
