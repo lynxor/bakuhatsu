@@ -43,6 +43,7 @@ $(function () {
                 }
                 bomb.countdown -= 1;
                 console.log("Time left: " + bomb.countdown);
+                drawBomb(bomb);
                 if (bomb.countdown <= 0) {
                     console.log("EXploding! " + bomb.pos);
                     explode(bomb.pos);
@@ -97,7 +98,7 @@ $(function () {
             x = e.pageX - position.left,
             y = e.pageY - position.top;
 
-        placeBomb([x, y], parseInt((Math.random() * 10 )));
+        placeBomb([x, y], parseInt( $("#timer").val() ));
     });
 
     function draw() {
@@ -140,9 +141,13 @@ $(function () {
         if (_.isUndefined(bomb.countdown)) bomb.countdown = bomb.timeout;
 
         if (bomb.countdown > 0) {
-            context.strokeStyle = '#F00';
-            context.strokeRect(x, y, 40, 20);
+            context.fillStyle = '#F00';
+            context.fillRect(x, y, 40, 20);
 
+            context.fillStyle = "#FFF";
+            context.font = "bold 12px sans-serif";
+            context.textBaseline = "top";
+            context.fillText("" + bomb.countdown, x + 15, y);
         }
 
     }
