@@ -226,7 +226,7 @@ $(function () {
             for (var i = 0; i < rabbits.length; i++) {
                 var r = rabbits[i];
                 //console.log("Drawing " + r);
-                context.drawImage(rabbit, r[0], r[1], 20, 20);
+                context.drawImage(rabbit, r[0] - 10, r[1] - 10, 20, 20);
             }
         }
     }
