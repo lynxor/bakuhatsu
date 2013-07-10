@@ -6,7 +6,10 @@ $(function () {
         numRabbits = 20,
         rabbits = randomRabbits(numRabbits, dim - 20),
         availableBombs = 3,
-        bombs = [];
+        bombs = [],
+        panics = [],
+        panicInterval = 100,
+        numPanics = 20;
 
     function updateControls() {
         $("#dashboard").html("Bombs left to place: " + (availableBombs - bombs.length));
@@ -43,7 +46,7 @@ $(function () {
                 if (bomb.countdown <= 0) {
                     console.log("EXploding! " + bomb.pos);
                     explode(bomb.pos);
-                    panic(bomb.pos);
+
                     if(done()){
                          showResult();
                     }
@@ -58,7 +61,7 @@ $(function () {
         if(rabbits.length){
             $("#result").html("You suck!");
         } else{
-            $("#result").html("Well done, all rabbits are now erradicated!");
+            $("#result").html("Well done, all rabbits are now eradicated!");
         }
     }
 
@@ -68,14 +71,25 @@ $(function () {
         });
     }
 
-    function explode(bomb) {
-        rabbits = calcExplosion(rabbits, [bomb]);
-        drawExplosion(bomb);
+    function explode(pos) {
+        rabbits = calcExplosion(rabbits, [pos]);
+        drawExplosion(pos);
         setTimeout(draw, 200);
+        setTimeout(function(){panic(pos);}, 200);
     }
 
     function panic(pos){
+        panics = _.map(_.range(numPanics), function(){return pos});
 
+        function doPanic(){
+            if(panics.length){
+                var bomb = panics.pop();
+                rabbits = calcPanic(rabbits, bomb, dim);
+                draw();
+                setTimeout(doPanic, panicInterval);
+            }
+        }
+        doPanic();
     }
 
     $(canvas).mousedown(function (e) {

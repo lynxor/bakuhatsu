@@ -1,5 +1,6 @@
 var kill_radius = 70,
-    panic_radius = 250;
+    panic_radius = 250,
+    speed = 4;
 
 function inRadius(location, center, radius){
     return radius > distance(location, center);
@@ -23,17 +24,47 @@ function calcExplosion(rabbits, bombs) {
     return rabbits;
 }
 
-function calcPanic(rabbits, bomb){
-    _.map(rabbits, function(rabbit){
+function calcPanic(rabbits, bomb, dim){
+    return _.map(rabbits, function(rabbit){
         if(inRadius(rabbit, bomb, panic_radius)){
-           return rabbitPanic(rabbit, bomb);
+           return rabbitPanic(rabbit, bomb, dim);
         }
         return rabbit;
     });
 }
 
-function rabbitPanic(rabbit, panicSource){
+function rabbitPanic(rabbit, panicSource, dim){
+    var u = unitVector(panicSource, rabbit),
+        newPos = vAdd(rabbit, vMult(speed, u));
 
+    //Prevent from running out of warzone
+    if( _.every(newPos, function(k){
+        return k > 10 && k < (dim - 10);
+    })){ return newPos; } else{
+        return rabbit;
+    }
+
+
+}
+
+function vAdd(p,q){
+    var i, result = [];
+    for(i = 0; i < q.length; i++){
+        result[i] = (q[i] + p[i]);
+    }
+    return result;
+}
+
+function vMult(x, p){
+    return _.map(p, function(k){return k*x;});
+}
+
+function unitVector(p,q){
+    var i, dist = distance(p,q), unitVect = [];
+    for(i = 0; i < q.length; i++){
+        unitVect[i] = (q[i] - p[i]) / dist;
+    }
+    return unitVect;
 }
 
 
