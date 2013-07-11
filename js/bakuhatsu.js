@@ -1,6 +1,6 @@
 var kill_radius = 70,
     panic_radius = 250,
-    speed = 5;
+    speed = 9;
 
 function inRadius(location, center, radius) {
     return radius > distance(location, center);

@@ -11,7 +11,7 @@ $(function () {
         lavaImage,
         expzone,
         darkZone,
-        rabbits = randomRabbits(numRabbits, dim - 20),
+        rabbits = randomRabbits(numRabbits, (dim - 70)),
         killzones = [ [[0, 350], [400, 350], [400, 400], [0, 400]] ], //wtf
         availableBombs = 3,
         bombs = [],
@@ -58,7 +58,7 @@ $(function () {
         numRabbits = parseInt( $("#num_rabbits").val() );
         kill_radius = parseInt( $("#kill_radius").val() );
         availableBombs = parseInt( $("#num_bombs").val() );
-        rabbits = randomRabbits(numRabbits, dim - 20);
+        rabbits = randomRabbits(numRabbits, (dim - 70));
         panics = [_.map(_.range(numPanics), function () {
             return [];
         })];
@@ -106,6 +106,7 @@ $(function () {
     }
 
     function placeBomb(pos, timeout) {
+        console.log("Placing bomb at " + pos);
         if (bombs.length < availableBombs) {
             var thebomb = {pos: pos, timeout: timeout, countdown: timeout};
             bombs.push(thebomb);
