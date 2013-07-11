@@ -6,7 +6,10 @@ $(function () {
         numRabbits = 5,
         grassImage, //the image
         explosionImage, //explosion image
+        explodedImage,
         rabbitImage,
+        expzone,
+        darkZone,
         rabbits = randomRabbits(numRabbits, dim - 20),
         availableBombs = 3,
         bombs = [],
@@ -15,11 +18,34 @@ $(function () {
             return [];
         })],
         panicInterval = 100,
-        originalRabbits; //replays!!
+        originalRabbits, //replays!!
+        renderQueue = [];
 
+
+    //init images
+    (function(){
         explosionImage = new Image();
         explosionImage.src = "img/explosion.png";
-        explosionImage.onload = function(){ context.drawImage(explosionImage, 0,0);}
+       // explosionImage.onload = function(){ context.drawImage(explosionImage, 0,0);}
+
+        expzone = new Image();
+        expzone.src = "img/thefadedring.png";
+
+        darkZone = new Image();
+        darkZone.src = "img/thedarkring.png";
+
+        explodedImage = new Image();
+        explodedImage.src = "img/exploded.png";
+
+        initRenderQueue();
+        draw();
+        updateControls();
+
+    })();
+
+    function initRenderQueue(){
+        renderQueue = [drawWarZone, drawRabbits];
+    }
 
     function reset() {
         numRabbits = parseInt( $("#num_rabbits").val() );
@@ -30,9 +56,12 @@ $(function () {
             return [];
         })];
         bombs = [];
-        draw();
+        initRenderQueue();
         updateControls();
         $("start_button").hide();
+
+        draw();
+
     }
 
     $("#retry_button").click(retry);
@@ -44,14 +73,17 @@ $(function () {
         });
         panics = [];
         bombs = [];
-        draw();
+        initRenderQueue();
         $("#start_button").hide();
+
+        draw();
     }
 
     $("#reset_bombs_button").click(function(){
         bombs = [];
         $("start_button").hide();
         availableBombs = parseInt( $("#num_bombs").val() );
+        initRenderQueue();
         draw();
     });
 
@@ -110,7 +142,10 @@ $(function () {
                     console.log("Exploding! " + bomb.pos);
                     explode(bomb.pos);
                     if (done()) {
-                        setTimeout(showResult, 1000);
+                        setTimeout(function(){
+                            renderQueue.push(showResult);
+                            draw();
+                        }, 1000);
                         $("#replay_button").show();
                     }
                 } else {
@@ -144,9 +179,7 @@ $(function () {
         rabbits = calcExplosion(rabbits, [pos]);
         drawExplosion(pos);
         setTimeout(draw, 200);
-        setTimeout(function () {
-            panic(pos);
-        }, 200);
+        panic(pos);
     }
 
     function panic(pos) {
@@ -166,17 +199,15 @@ $(function () {
     function startPanic() {
 
         function doPanic() {
-            if (panics.length && !done()) {
+            if (panics.length) {
                 var pbombs = panics.pop();
                 rabbits = calcPanic(rabbits, pbombs, dim);
                 draw();
             }
-
-            if (!done()) {
+            if (!done() || panics.length) {
                 setTimeout(doPanic, panicInterval);
             }
         }
-
         doPanic();
     }
 
@@ -202,18 +233,13 @@ $(function () {
     });
 
     function showExplosionZone(pos) {
-        var expzone = new Image();
-        expzone.src = "img/thefadedring.png";
-        context.drawImage(expzone, pos[0] - panic_radius, pos[1] - panic_radius, panic_radius * 2, panic_radius * 2);
 
-        var darkZone = new Image();
-        darkZone.src = "img/thedarkring.png";
+        context.drawImage(expzone, pos[0] - panic_radius, pos[1] - panic_radius, panic_radius * 2, panic_radius * 2);
         context.drawImage(darkZone, pos[0] - kill_radius, pos[1] - kill_radius, kill_radius * 2, kill_radius * 2);
     }
 
     function draw() {
-        drawWarZone();
-        drawRabbits();
+        _.each(renderQueue, function(f){f();});
     }
 
     function drawExplosion(pos) {
@@ -290,11 +316,10 @@ $(function () {
             context.strokeStyle = '#D11';
             strokeCircle(x, y, kill_radius);
            // strokeCircle(x, y, panic_radius);
+        } else {
+            var radius = kill_radius;
+            context.drawImage(explodedImage, x - radius, y - radius, kill_radius * 2, kill_radius * 2);
         }
     }
-
-
-    draw();
-    updateControls();
 
 });
