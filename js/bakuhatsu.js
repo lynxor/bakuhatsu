@@ -6,6 +6,10 @@ function inRadius(location, center, radius) {
     return radius > distance(location, center);
 }
 
+function inKillZone(location, killzone){
+
+}
+
 function distance(q, p) {
     var i, sum = 0;
     for (i = 0; i < q.length; i++) {

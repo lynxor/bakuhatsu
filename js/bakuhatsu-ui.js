@@ -44,7 +44,7 @@ $(function () {
     })();
 
     function initRenderQueue(){
-        renderQueue = [drawWarZone, drawRabbits];
+        renderQueue = [drawWarZone, drawRabbits, drawObstacles];
     }
 
     function reset() {
@@ -281,6 +281,10 @@ $(function () {
         }
         drawGrass();
         _.each(bombs, drawBomb);
+    }
+
+    function drawObstacles(){
+
     }
 
     function drawRabbits() {
