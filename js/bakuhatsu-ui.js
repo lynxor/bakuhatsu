@@ -157,15 +157,16 @@ $(function () {
 
     function showResult() {
         context.font = "bold 30px sans-serif";
-        context.textBaseline = "top";
+        context.textBaseline = "center";
+        context.textAlign = "center";
 
         if (rabbits.length) {
             $("#result").html("You suck!");
             context.fillStyle = "#F00";
-            context.fillText("You suck!", (dim / 2) - 30, 10);
+            context.fillText("You suck!", dim/2, dim/2);
         } else {
             context.fillStyle = "#F00";
-            context.fillText("Well done, eradication!!", 10, (dim / 2) - 30);
+            context.fillText("Well done, eradication!!", dim/2, dim/2);
         }
     }
 

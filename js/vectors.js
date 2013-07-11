@@ -7,10 +7,11 @@ function vDot(p,q){
     });
 }
 
+//also works as center of points
 function vAv(vectors){
     var sum = _.reduce(vectors, function(memo, vec){
         return vAdd(memo, vec);
-    });
+    }, [0,0]);
     return vDiv(vectors.length, sum);
 }
 
@@ -18,6 +19,20 @@ function vAdd(p,q){
     var i, result = [];
     for(i = 0; i < q.length; i++){
         result[i] = (q[i] + p[i]);
+    }
+    return result;
+}
+
+function vSum(vectors){
+    _.reduce(vectors, function(memo, vector){
+        vAdd(memo, vector);
+    }, [0,0]);
+}
+
+function vMin(p,q){
+    var i, result = [];
+    for(i = 0; i < q.length; i++){
+        result[i] = (p[i] - q[i]);
     }
     return result;
 }
