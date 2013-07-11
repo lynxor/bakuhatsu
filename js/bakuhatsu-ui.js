@@ -8,9 +8,11 @@ $(function () {
         explosionImage, //explosion image
         explodedImage,
         rabbitImage,
+        lavaImage,
         expzone,
         darkZone,
         rabbits = randomRabbits(numRabbits, dim - 20),
+        killzones = [ [[0, 350], [400, 350], [400, 400], [0, 400]] ], //wtf
         availableBombs = 3,
         bombs = [],
         numPanics = 20,
@@ -37,14 +39,19 @@ $(function () {
         explodedImage = new Image();
         explodedImage.src = "img/exploded.png";
 
+        lavaImage = new Image();
+        lavaImage.src = "img/lava.png";
+
         initRenderQueue();
         draw();
         updateControls();
+        setTimeout(drawKillZones, 500);
+        //drawKillZones();
 
     })();
 
     function initRenderQueue(){
-        renderQueue = [drawWarZone, drawRabbits, drawObstacles];
+        renderQueue = [drawWarZone, drawKillZones, drawRabbits];
     }
 
     function reset() {
@@ -173,7 +180,7 @@ $(function () {
     function done() {
         return !_.any(bombs, function (bomb) {
             return bomb.countdown > 0;
-        }) && bombs.length !== 0;
+        }) && bombs.length !== 0 && panics.length === 0;
     }
 
     function explode(pos) {
@@ -202,7 +209,7 @@ $(function () {
         function doPanic() {
             if (panics.length) {
                 var pbombs = panics.pop();
-                rabbits = calcPanic(rabbits, pbombs, dim);
+                rabbits = calcPanic(rabbits, pbombs, killzones, dim);
                 draw();
             }
             if (!done() || panics.length) {
@@ -283,8 +290,21 @@ $(function () {
         _.each(bombs, drawBomb);
     }
 
-    function drawObstacles(){
+    function drawPolygon(points){
+        context.beginPath();
+        context.moveTo(points[0][0], points[0][1]);
+        _.each(_.rest(points), function(p){
+            context.lineTo(p[0],p[1]);
+        });
+        context.closePath();
+        context.fill();
+    }
 
+
+    function drawKillZones(){
+        var pattern = context.createPattern(lavaImage, "repeat");
+        context.fillStyle = pattern;
+        _.each(killzones, drawPolygon);
     }
 
     function drawRabbits() {

@@ -6,8 +6,10 @@ function inRadius(location, center, radius) {
     return radius > distance(location, center);
 }
 
-function inKillZone(location, killzone){
-
+function inKillZones(location, killzones){
+    return _.any(killzones, function(kz){
+        return pip(kz, location);
+    });
 }
 
 function distance(q, p) {
@@ -28,21 +30,21 @@ function calcExplosion(rabbits, bombs) {
     return rabbits;
 }
 
-function calcPanic(rabbits, bombs, dim) {
-    return _.map(rabbits, function (rabbit) {
+function calcPanic(rabbits, bombs, killzones, dim) {
+    return _.chain(rabbits).map(function (rabbit) {
         var bombsInRange = _.filter(bombs, function (b) {
-            return inRadius(rabbit, b, panic_radius);
+            return inRadius(rabbit, b,panic_radius);
         });
 
         if (bombsInRange.length) {
-            return rabbitPanic(rabbit, bombsInRange, dim);
+            return rabbitPanic(rabbit, bombsInRange, killzones, dim);
         }
         return rabbit;
-    });
+    }).filter(_.isArray).value();
 }
 
 //get the center of the sources and then the direction between the center and the rabbit
-function rabbitPanic(rabbit, panicSources, dim) {
+function rabbitPanic(rabbit, panicSources, killzones, dim) {
 
           var center = vAv(panicSources),
               direction = unitVector(center, rabbit);
@@ -52,7 +54,7 @@ function rabbitPanic(rabbit, panicSources, dim) {
     if (_.every(newPos, function (k) {
         return k > 10 && k < (dim - 10);
     })) {
-        return newPos;
+       return inKillZones(newPos, killzones)? null : newPos;
     } else {
         return rabbit;
     }
