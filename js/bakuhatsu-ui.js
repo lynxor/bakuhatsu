@@ -35,6 +35,19 @@ $(function () {
         $("start_button").hide();
     }
 
+    $("#retry_button").click(retry);
+
+    function retry(){
+        rabbits = originalRabbits;
+        _.each(bombs, function(b){
+            b.countdown = b.timeout;
+        });
+        panics = [];
+        bombs = [];
+        draw();
+        $("#start_button").hide();
+    }
+
     $("#reset_bombs_button").click(function(){
         bombs = [];
         $("start_button").hide();
