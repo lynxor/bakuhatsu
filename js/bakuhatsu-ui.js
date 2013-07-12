@@ -1,8 +1,27 @@
-$(function () {
+var canvas = document.getElementById("the_canvas"),
+    context = canvas.getContext("2d"),
+    unbind = _.identity;
 
-    var canvas = document.getElementById("the_canvas"),
-        context = canvas.getContext("2d"),
-        dim = 400,
+$(function(){
+
+    _.each(levels, function(level){
+       $("#levels").append('<button id="play_' + level.number + '">'+ level.name + '</button></br>');
+
+       $("#play_" + level.number).click(function(){
+          unbind();
+          playLevel(level);
+       });
+    });
+
+    playLevel(levels[0]);
+});
+
+
+
+function playLevel(level) {
+
+
+    var dim = 400,
         numRabbits = 5,
         grassImage, //the image
         explosionImage, //explosion image
@@ -11,9 +30,9 @@ $(function () {
         lavaImage,
         expzone,
         darkZone,
-        rabbits = randomRabbits(numRabbits, (dim - 70)),
-        killzones = [ [[0, 350], [400, 350], [400, 400], [0, 400]] ], //wtf
-        availableBombs = 3,
+        rabbits = level.rabbits,//randomRabbits(numRabbits, (dim - 70)),
+        killzones = level.killzones,
+        availableBombs = level.availableBombs,
         bombs = [],
         numPanics = 20,
         panics = [_.map(_.range(numPanics), function () {
@@ -21,14 +40,14 @@ $(function () {
         })],
         panicInterval = 100,
         originalRabbits, //replays!!
-        renderQueue = [];
+        renderQueue = [],
+        selectedbomb;
 
 
-    //init images
+    //init images upfront so they don't flicker
     (function(){
         explosionImage = new Image();
         explosionImage.src = "img/explosion.png";
-       // explosionImage.onload = function(){ context.drawImage(explosionImage, 0,0);}
 
         expzone = new Image();
         expzone.src = "img/thefadedring.png";
@@ -47,6 +66,9 @@ $(function () {
         updateControls();
         setTimeout(drawKillZones, 500);
         //drawKillZones();
+        $("#title").html('<h1>'+level.name+'</h1>');
+        bindHandlers();
+        unbind = unbindHandlers;
 
     })();
 
@@ -66,12 +88,41 @@ $(function () {
         initRenderQueue();
         updateControls();
         $("start_button").hide();
-
         draw();
+    }
+
+    function bindHandlers(){
+        $("#retry_button").click(retry);
+        $("#reset_button").click(reset);
+        $("#replay_button").click(replay);
+        $("#start_button").click(start);
+
+        $(canvas).mousedown(mousedown);
+        $(canvas).mouseup(mouseup);
+
+        Mousetrap.bind("up", upPressed);
+        Mousetrap.bind("down", downPressed);
+
 
     }
 
-    $("#retry_button").click(retry);
+    function unbindHandlers(){
+        console.log("unbinding handlers...")
+        $("#retry_button").unbind('click', retry);
+        $("#reset_button").unbind('click', reset);
+        $("#replay_button").unbind('click', replay);
+        $("#start_button").unbind('click', start);
+
+        $(canvas).unbind('mousedown', mousedown);
+        $(canvas).unbind('mouseup', mouseup);
+        console.log("done");
+
+        Mousetrap.unbind("up", upPressed);
+        Mousetrap.unbind("down", downPressed);
+
+    }
+
+
 
     function retry(){
         rabbits = originalRabbits;
@@ -86,17 +137,6 @@ $(function () {
         draw();
     }
 
-    $("#reset_bombs_button").click(function(){
-        bombs = [];
-        $("start_button").hide();
-        availableBombs = parseInt( $("#num_bombs").val() );
-        initRenderQueue();
-        draw();
-    });
-
-
-
-    $("#reset_button").click(reset);
 
     function updateControls() {
         $("#dashboard").html("Bombs left to place: " + (availableBombs - bombs.length));
@@ -110,33 +150,33 @@ $(function () {
         if (bombs.length < availableBombs) {
             var thebomb = {pos: pos, timeout: timeout, countdown: timeout};
             bombs.push(thebomb);
-
+            selectedbomb = thebomb;
             updateControls();
-            drawBomb(thebomb);
+            draw();
         }
     }
 
-    $("#replay_button").click(replay);
     function replay(){
         rabbits = originalRabbits;
         _.each(bombs, function(b){
             b.countdown = b.timeout;
         });
         panics = [];
+        initRenderQueue();
         draw();
         start();
     }
 
-    $("#start_button").click(start);
+
     function start() {
         originalRabbits = rabbits;
 
-        if (bombs.length === availableBombs) {
+       // if (bombs.length === availableBombs) {
             _.each(bombs, function (bomb) {
                 countdown(bomb);
             });
             startPanic();
-        }
+        //}
 
         function countdown(bomb) {
             setTimeout(function () {
@@ -167,7 +207,7 @@ $(function () {
         context.font = "bold 30px sans-serif";
         context.textBaseline = "center";
         context.textAlign = "center";
-
+        $("#replay_button").show();
         if (rabbits.length) {
             $("#result").html("You suck!");
             context.fillStyle = "#F00";
@@ -215,31 +255,76 @@ $(function () {
             }
             if (!done() || panics.length) {
                 setTimeout(doPanic, panicInterval);
+            } else {
+                renderQueue.push(showResult);
+                draw();
             }
+
         }
         doPanic();
     }
 
-    $(canvas).mousemove(function (e) {
-        if (!done()) {
-            var position = $(canvas).position(),
-                x = e.pageX - position.left,
-                y = e.pageY - position.top;
+//    $(canvas).mousemove(function (e) {
+//        if (!done()) {
+//            var pos = position(e),x = pos.x, y = pos.y;
+//            draw();
+//            if(x > 3 && x < (dim - 3) && y  > 3 && y < (dim - 3)){     //blagh useless
+//                //showExplosionZone([x, y]);
+//            }
+//        }
+//    });
+
+
+
+    function upPressed(e){
+
+        if(selectedbomb){
+            selectedbomb.timeout = (selectedbomb.timeout % 10) + 1;
+            selectedbomb.countdown = selectedbomb.timeout;
             draw();
-            if(x > 3 && x < (dim - 3) && y  > 3 && y < (dim - 3)){     //blagh useless
-                showExplosionZone([x, y]);
-            }
         }
-    });
+    }
+    function downPressed(e){
 
+        if(selectedbomb){
+            if(selectedbomb.timeout == 1){
+                selectedbomb.timeout = 11;
+            }
+            selectedbomb.timeout = selectedbomb.timeout - 1;
+            selectedbomb.countdown = selectedbomb.timeout;
+            draw();
+        }
+    }
 
-    $(canvas).mousedown(function (e) {
+    function mousedown(e){
+        var pos = position(e),x = pos.x, y = pos.y;
+        selectedbomb = _.find(bombs, function(b){
+            return distance(b.pos, [x,y]) < 10; //bit inaccurate but should do the trick
+        });
+    }
+
+    function mouseup(e){
+        var pos = position(e),x = pos.x, y = pos.y;
+
+        if(selectedbomb){
+            selectedbomb.pos = [x,y];
+            draw();
+        } else {
+            placeBomb([x,y], 1);
+        }
+    }
+
+    function position(e){
         var position = $(canvas).position(),
             x = e.pageX - position.left,
             y = e.pageY - position.top;
+        return {x: x, y: y};
+    }
 
-        placeBomb([x, y], parseInt($("#timer").val()));
-    });
+//    $(canvas).click(function (e) {
+//        var pos = position(e),x = pos.x, y = pos.y;
+//
+//    });
 
     function showExplosionZone(pos) {
 
@@ -338,9 +423,10 @@ $(function () {
             context.font = "bold 12px sans-serif";
             context.textBaseline = "top";
             context.fillText("" + bomb.countdown, x - 1, y - 6);
-
-            context.strokeStyle = '#D11';
-            strokeCircle(x, y, kill_radius);
+            if(bomb == selectedbomb){
+                context.strokeStyle = '#D11';
+                strokeCircle(x, y, kill_radius);
+            }
            // strokeCircle(x, y, panic_radius);
         } else {
             var radius = kill_radius;
@@ -348,4 +434,5 @@ $(function () {
         }
     }
 
-});
+}
+

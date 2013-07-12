@@ -24,6 +24,7 @@
         <!-- Add your site or application content here -->
         <div id='content'>
             <div style='height: 500px;width:500px; float: left;' >
+                <div id='title'></div>
                 <canvas id="the_canvas" width="400" height="400"></canvas>
             </div>
             <div id='controls' style='float: left;'>
@@ -37,29 +38,31 @@
                 <label for='kill_radius' >Explosion Radius</label>
                 <input id="kill_radius" type='text' value='70' > </br>
 
-                <label for='timer' >Timeout</label>
-                <input id='timer' type='text' value='1' > </br>
-
                 <button id='start_button' style='display:none;' value='Start' >Start</button>
-                <button id='reset_button'>Reset everything</button>
-                <button id='reset_bombs_button'>Reset bombs</button>
                 <button id='replay_button' style='display: none'>Replay!!</button>
                 <button id='retry_button'>Retry!!</button>
+
+
                 <span id='dashboard'></span>
             </div>
+
+            <div id="levels"></div>
+
         </div>
         <div id="result"></div>
 
 
         <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
         <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.10.2.min.js"><\/script>')</script>
-        <script type='text/javascript' src='js/vendor/underscore.js' />
-        <script type='text/javascript' src='js/vendor/moment.js' />
+        <script type='text/javascript' src='js/vendor/underscore.js' ></script>
+        <script type='text/javascript' src='js/vendor/moment.js' ></script>
+        <script type='text/javascript' src='js/vendor/mousetrap.js'></script>
 
         <script src="js/plugins.js"></script>
         <script src="js/main.js"></script>
         <script src="js/vectors.js"></script>
         <script src="js/bakuhatsu.js"></script>
+        <script src='js/levels.js'></script>
         <script src="js/bakuhatsu-ui.js"></script>
 
 
