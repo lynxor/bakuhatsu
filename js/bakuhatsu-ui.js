@@ -41,7 +41,8 @@ function playLevel(level) {
         panicInterval = 100,
         originalRabbits, //replays!!
         renderQueue = [],
-        selectedbomb;
+        selectedbomb,
+        dragging = false;
 
 
     //init images upfront so they don't flicker
@@ -69,6 +70,7 @@ function playLevel(level) {
         $("#title").html('<h1>'+level.name+'</h1>');
         bindHandlers();
         unbind = unbindHandlers;
+
 
     })();
 
@@ -99,6 +101,7 @@ function playLevel(level) {
 
         $(canvas).mousedown(mousedown);
         $(canvas).mouseup(mouseup);
+        $(canvas).mousemove(mousemove);
 
         Mousetrap.bind("up", upPressed);
         Mousetrap.bind("down", downPressed);
@@ -115,6 +118,7 @@ function playLevel(level) {
 
         $(canvas).unbind('mousedown', mousedown);
         $(canvas).unbind('mouseup', mouseup);
+        $(canvas).unbind("mousemove", mousemove);
         console.log("done");
 
         Mousetrap.unbind("up", upPressed);
@@ -301,6 +305,9 @@ function playLevel(level) {
         selectedbomb = _.find(bombs, function(b){
             return distance(b.pos, [x,y]) < 10; //bit inaccurate but should do the trick
         });
+        if(selectedbomb){
+            dragging = true;
+        }
     }
 
     function mouseup(e){
@@ -308,10 +315,24 @@ function playLevel(level) {
 
         if(selectedbomb){
             selectedbomb.pos = [x,y];
+            dragging = false;
             draw();
         } else {
             placeBomb([x,y], 1);
         }
+    }
+    function mousemove(e){
+
+        if(dragging){
+            var pos = position(e),x = pos.x, y = pos.y;
+
+            draw();
+
+            context.fillStyle = "rgba(255, 0, 0, 0.1)";
+            fillCircle(x, y, kill_radius);
+
+        }
+
     }
 
     function position(e){
@@ -424,8 +445,8 @@ function playLevel(level) {
             context.textBaseline = "top";
             context.fillText("" + bomb.countdown, x - 1, y - 6);
             if(bomb == selectedbomb){
-                context.strokeStyle = '#D11';
-                strokeCircle(x, y, kill_radius);
+                context.fillStyle = "rgba(255, 0, 0, 0.2)";
+                fillCircle(x, y, kill_radius);
             }
            // strokeCircle(x, y, panic_radius);
         } else {
